@@ -2,12 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
-import React, {FormEvent, useEffect, useRef, useState} from 'react'
+import React, {FormEvent, useRef, useState} from 'react'
 import ChatBotContent from "@/components/ChatBotContent";
 import Loading from "@/components/ui/loading";
 import CustomError from "@/components/ui/error";
-import {ChevronDown, ChevronLeft, ChevronRight, ChevronUp} from "lucide-react";
+import {ChevronDown, ChevronUp} from "lucide-react";
 import {PaperAirplaneIcon} from "@heroicons/react/24/solid";
+import Image from 'next/image';
 
 interface ConversationMessage  {
     id: number | string;
@@ -91,7 +92,7 @@ export default function Chat() {
     };
 
     return (
-        <div className="flex flex-row justify-center h-screen p-10 gap-6 text-lg items-stretch">
+        <div className="flex flex-row justify-center h-screen p-10 gap-6 text-lg items-stretch bg-primary text-white">
                         <div className={`flex flex-col transition-all duration-300 ease-in-out ${isPanelOpen ? 'w-3/4' : 'w-[calc(100%-60px)]'}`}>
                             <div className="flex flex-col h-full w-full rounded-lg">
                                 <div className="text-left  rounded-t-lg ">
@@ -104,7 +105,9 @@ export default function Chat() {
                                     {conversation.filter((m) => m.content !== "").map((m) => (
                                         <div key={m.id} className={`mb-4 flex ${m.role === "user" ? "text-right" : "text-left"}`}>
                                             {m.role != "user" && <div
-                                                className={"bg-primary h-8 w-8 p-2 rounded-full mr-2 flex justify-center items-center"}>G</div>}
+                                                className={"h-12 w-12 p-2 rounded-full mr-2 flex justify-center items-center shadow drop-shadow-lg shadow-amber-50"}>
+                                                <Image src={"/huggingface-2.svg"} alt={"huggingface"} width={"40"} height={"40"} />
+                                            </div>}
                                             <div
                                                 className={`mb-4 ${
                                                     m.role === "user"
@@ -135,7 +138,7 @@ export default function Chat() {
                                     <form onSubmit={onSubmit} className="relative w-full">
                                             <textarea
                                                 placeholder="Ask anything..."
-                                                className="w-full border border-gray-300 p-4 pr-12 resize-none rounded-lg min-h-[100px]"
+                                                className="w-full border border-gray-300 p-4 pr-12 resize-none rounded-lg min-h-[100px] bg-primary"
                                                 disabled={isLoading}
                                                 value={textMessage}
                                                 onChange={(e) => {
