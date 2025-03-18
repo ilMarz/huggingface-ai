@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
           content: messages
         }
       ],
-      max_tokens: 500,
+      max_tokens: 250,
     }
 
     const chatCompletion = await client.chatCompletion(model.provider ? {...chatOpt, provider: model.provider} : chatOpt);

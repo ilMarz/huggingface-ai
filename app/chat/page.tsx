@@ -93,8 +93,7 @@ export default function Chat() {
             }
 
             setConversation(prevConversation => [...prevConversation, conversationMessage]);
-            scrollToBottom();
-            setIsLoading(false)
+            setIsLoading(false);
 
         } catch (error: unknown) {
             let msg = "";
@@ -112,6 +111,10 @@ export default function Chat() {
             console.error(msg)
         }
     };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [conversation]);
 
     return (
         <div className="flex flex-col h-screen bg-primary text-white">
