@@ -9,7 +9,7 @@ import {ChevronDown, ChevronUp} from "lucide-react";
 import {PaperAirplaneIcon} from "@heroicons/react/24/solid";
 import Image from 'next/image';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import toast from "react-hot-toast";
+import {nanoid} from "nanoid";
 
 interface ConversationMessage  {
     id: number | string;
@@ -103,8 +103,13 @@ export default function Chat() {
             } else {
                 msg = "Errore sconosciuto durante la richiesta."
             }
+            setConversation(prevConversation => [...prevConversation, {
+                id: nanoid(),
+                role: "assistant",
+                content: "&#128533; Ops sembra ci sia stato un errore..."
+            }])
             setIsLoading(false);
-            toast.error(msg)
+            console.error(msg)
         }
     };
 
