@@ -17,6 +17,9 @@ dependencies:
   '@heroicons/react':
     specifier: ^2.2.0
     version: 2.2.0(react@18.3.1)
+  '@huggingface/inference':
+    specifier: ^3.5.2
+    version: 3.5.2
   '@microsoft/microsoft-graph-client':
     specifier: ^3.0.7
     version: 3.0.7(@azure/identity@4.5.0)
@@ -1089,6 +1092,17 @@ packages:
       react: '>= 16 || ^19.0.0-rc'
     dependencies:
       react: 18.3.1
+    dev: false
+
+  /@huggingface/inference@3.5.2:
+    resolution: {integrity: sha512-MIB1iZTtTBclIFmRL2fbkoxZTuMjziezx87nUzzsPwCX96c+ciilWV+QQZOjOmBlx1ZrfSuJbhwZ1pylSENZnQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@huggingface/tasks': 0.17.5
+    dev: false
+
+  /@huggingface/tasks@0.17.5:
+    resolution: {integrity: sha512-XpXNScVnclk4+QNTYZ7hu6XiOn10liAkt/PGlNWblRP4FZVi75PaXjVGMSaQS3AKFHcMy0RUZPxYYKoGxFWX/A==}
     dev: false
 
   /@humanwhocodes/config-array@0.13.0:

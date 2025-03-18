@@ -2,13 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
-import React, {FormEvent, useRef, useState} from 'react'
+import React, {FormEvent, useEffect, useRef, useState} from 'react'
 import ChatBotContent from "@/components/ChatBotContent";
 import Loading from "@/components/ui/loading";
-import CustomError from "@/components/ui/error";
 import {ChevronDown, ChevronUp} from "lucide-react";
 import {PaperAirplaneIcon} from "@heroicons/react/24/solid";
 import Image from 'next/image';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import toast from "react-hot-toast";
 
 interface ConversationMessage  {
     id: number | string;
@@ -20,11 +21,22 @@ interface ConversationMessage  {
 export default function Chat() {
     const [conversation, setConversation] = useState<ConversationMessage[]>([] as ConversationMessage[])
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [error, setError] = useState<string>("")
     const [textMessage, setTextMessage] = useState("");
     const [startConversation, setStartConversation] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const [isBoxOpen, setIsBoxOpen] = useState(true);
+    const [modelList, setModelList] =
+        useState<{id: string, label: string, value: string, provider?: string}[]>([
+            {id: "0", label: "Llama", value: "meta-llama/Llama-3.1-8B-Instruct", provider: "fireworks-ai"},
+            {id: "1", label: "Gemma", value: "google/gemma-2-2b-it", provider: "nebius"},
+        ]);
+    const [model, setModel] = useState<{id: string, label: string, value: string, provider?: string}>();
+
+
+    useEffect(() => {
+        setModel(modelList.find(model => model.id == "0"))
+    }, [modelList]);
+
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -60,7 +72,7 @@ export default function Chat() {
         }
         setConversation(prevConversation => [...prevConversation, conversationMessageUser]);
 
-        const body = JSON.stringify({ messages: textMessage });
+        const body = JSON.stringify({ messages: textMessage, model });
 
         try {
             const res = await fetch('/api/huggingface/', {
@@ -68,6 +80,10 @@ export default function Chat() {
                 headers: { 'Content-Type': 'application/json' },
                 body: body,
             });
+
+            if(!res.ok) {
+                throw Error((await res.json()).error)
+            }
 
             const data = await res.json();
             const conversationMessage: ConversationMessage = {
@@ -77,16 +93,18 @@ export default function Chat() {
             }
 
             setConversation(prevConversation => [...prevConversation, conversationMessage]);
+            scrollToBottom();
             setIsLoading(false)
 
         } catch (error: unknown) {
+            let msg = "";
             if (error instanceof Error) {
-                setError(error.message);  // Usa il messaggio dell'errore
+                msg = error.message  // Usa il messaggio dell'errore
             } else {
-                setError("Errore sconosciuto durante la richiesta.");
+                msg = "Errore sconosciuto durante la richiesta."
             }
-            console.error("Errore:", error);
-            setIsLoading(false)
+            setIsLoading(false);
+            toast.error(msg)
         }
     };
 
@@ -138,7 +156,6 @@ export default function Chat() {
                                 </div>
                             ))}
                         <Loading showLoading={isLoading}/>
-                        <CustomError error={error}/>
                     </div>
 
                     {/* Input area toggle button */}
@@ -152,14 +169,28 @@ export default function Chat() {
                     <CardFooter
                         className={`flex flex-col space-y-4 rounded-b-lg p-2 md:p-3 ${!isBoxOpen ? "hidden" : ""}`}>
                         <form onSubmit={onSubmit} className="relative w-full">
-              <textarea
-                  placeholder="Ask anything..."
-                  className="w-full border border-gray-300 p-3 pr-10 md:p-4 md:pr-12 resize-none rounded-lg min-h-[60px] md:min-h-[100px] bg-primary"
-                  disabled={isLoading}
-                  value={textMessage}
-                  onChange={(e) => setTextMessage(e.target.value)}
-                  onKeyDown={handleUserKeyPress}
-              />
+                            <div>
+                                <Select onValueChange={(id) => {setModel(modelList.find(model => model.id == id))}}
+                                        defaultValue={modelList[0].id}
+                                >
+                                    <SelectTrigger className="bg-white w-fit bg-primary border-none">
+                                        <SelectValue placeholder="select model" />
+                                    </SelectTrigger>
+                                    <SelectContent >
+                                        {modelList.map(model =>
+                                            <SelectItem key={model.id} value={model.id}>{model.label + ` (${model.value})`}</SelectItem>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                              <textarea
+                                  placeholder="Ask anything..."
+                                  className="w-full border border-gray-300 p-3 pr-10 md:p-4 md:pr-12 resize-none rounded-lg min-h-[60px] md:min-h-[100px] bg-primary"
+                                  disabled={isLoading}
+                                  value={textMessage}
+                                  onChange={(e) => setTextMessage(e.target.value)}
+                                  onKeyDown={handleUserKeyPress}
+                              />
                             <Button
                                 type="submit"
                                 disabled={isLoading}

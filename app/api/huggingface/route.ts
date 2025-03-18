@@ -1,54 +1,43 @@
 
 import { NextRequest, NextResponse } from 'next/server';
+import {InferenceClient} from "@huggingface/inference";
 
 export async function POST(req: NextRequest) {
     
   console.log('Using HUGGING: API route called');
   try {
-    const { messages} = await req.json();
+    const { messages, model } = await req.json();
 
+    if(!model || !model.value) {
+      throw Error(`model is not correct: ${model}`)
+    }
+    const client = new InferenceClient(process.env.HUGGINGFACE_API_KEY);
 
-    const HF_API_URL = 'https://api-inference.huggingface.co/models/google/gemma-1.1-7b-it/v1/chat/completions'; 
-    const HF_API_TOKEN = process.env.HUGGINGFACE_API_KEY;
-
-        const payload = 
+    const chatOpt = {
+      model: model.value,
+      messages: [
+        { role: "system",
+          content: "Sei un assistente che si occupa di fornire informazioni"
+        },
         {
-          "model": "google/gemma-2-2b-it",
-          "messages": [
-            { "role": "user", 
-              "content": messages 
-            },
-            { "role": "system", 
-              "content": "Sei un assistente che si occupa di fornire informazioni"
-            },
-          ] ,
-          "max_tokens": 500,
-          "stream": false
-      }
-        
-        const response = await fetch(HF_API_URL, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${HF_API_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Errore API Hugging Face: ${JSON.stringify(response)}`);
+          role: "user",
+          content: messages
         }
+      ],
+      max_tokens: 500,
+    }
 
-        console.log("RESPONSE OK FROM HUGGING")
+    const chatCompletion = await client.chatCompletion(model.provider ? {...chatOpt, provider: model.provider} : chatOpt);
 
-        const data = await response.json();
+    console.log("RESPONSE OK FROM HUGGING")
 
-        return NextResponse.json({ data: data });
+    return NextResponse.json({ data: chatCompletion });
       
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error('Error in API route:', errorMessage);
-    return NextResponse.json({ error: errorMessage || 'An error occurred while processing your request' }, { status: 500 });  
+
+    return NextResponse.json({ error: errorMessage || 'An error occurred while processing your request' }, { status: 500 });
   }
 }
 
