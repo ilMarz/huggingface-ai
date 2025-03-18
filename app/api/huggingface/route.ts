@@ -1,6 +1,5 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import {getHuggingFaceKey} from "../../../../../vercel-rag-chatbot/ai-sdk-rag-starter/lib/utils/serverUtils";
 
 export async function POST(req: NextRequest) {
     
@@ -10,7 +9,7 @@ export async function POST(req: NextRequest) {
 
 
     const HF_API_URL = 'https://api-inference.huggingface.co/models/google/gemma-1.1-7b-it/v1/chat/completions'; 
-    const HF_API_TOKEN = await getHuggingFaceKey();
+    const HF_API_TOKEN = process.env.HUGGINGFACE_API_KEY;
 
         const payload = 
         {
