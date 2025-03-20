@@ -186,7 +186,7 @@ export default function Chat() {
                                     <Switch id="bad-mode" onCheckedChange={setInsultMode}/>
                                     <Label htmlFor="bad-mode">Insult Mode {insultMode ? "ON 😈" : "OFF 😇"}</Label>
                                 </div>
-                                <div>
+                                <div hidden>
                                     <Select
                                         onValueChange={(id) => {
                                             setModel(modelList.find(model => model.id == id))
