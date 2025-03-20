@@ -6,18 +6,26 @@ export async function POST(req: NextRequest) {
     
   console.log('Using HUGGING: API route called');
   try {
-    const { messages, model } = await req.json();
+    const { messages, model, insultMode } = await req.json();
 
     if(!model || !model.value) {
       throw Error(`model is not correct: ${model}`)
     }
     const client = new InferenceClient(process.env.HUGGINGFACE_API_KEY);
 
+    const systemPrompt =
+        insultMode ? `Sei un assistente che si occupa di fornire informazioni.
+                    Usi un tono ironico. Rispondi alle domande dell'utente prendendolo in giro.
+                    Sei cinico e cattivo. 
+                    Il tuo compito è quello di rispondere alle domande cercando di offendere l'utente.` :
+            "Sei un assistente che si occupa di fornire informazioni e rispondere a domande"
+
+
     const chatOpt = {
       model: model.value,
       messages: [
         { role: "system",
-          content: "Sei un assistente che si occupa di fornire informazioni"
+          content: systemPrompt
         },
         {
           role: "user",

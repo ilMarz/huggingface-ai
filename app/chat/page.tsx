@@ -10,6 +10,8 @@ import {PaperAirplaneIcon} from "@heroicons/react/24/solid";
 import Image from 'next/image';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {nanoid} from "nanoid";
+import {Switch} from "@/components/ui/switch";
+import { Label } from '@/components/ui/label';
 
 interface ConversationMessage  {
     id: number | string;
@@ -31,6 +33,7 @@ export default function Chat() {
             {id: "1", label: "Gemma", value: "google/gemma-2-2b-it", provider: "nebius"},
         ]);
     const [model, setModel] = useState<{id: string, label: string, value: string, provider?: string}>();
+    const [insultMode, setInsultMode] = useState<boolean>(false)
 
 
     useEffect(() => {
@@ -72,7 +75,7 @@ export default function Chat() {
         }
         setConversation(prevConversation => [...prevConversation, conversationMessageUser]);
 
-        const body = JSON.stringify({ messages: textMessage, model });
+        const body = JSON.stringify({ messages: textMessage, model, insultMode });
 
         try {
             const res = await fetch('/api/huggingface/', {
@@ -117,18 +120,19 @@ export default function Chat() {
     }, [conversation]);
 
     return (
-        <div className="flex flex-col h-screen bg-primary text-white">
+        <div className={`flex flex-col h-screen ${insultMode ? "bg-[#940000]" : "bg-primary"} text-white`}>
             {/* Fixed header */}
             <div className="text-center rounded-t-lg p-4 bg-primary sticky top-0 z-10">
                 <div
                     className={`text-3xl md:text-6xl ${startConversation ? "text-sm md:text-xs" : ""} text-[var(--main-color)] transition-all duration-300`}
                 >
-                    How can I help you?
+                    {insultMode ? "Should I really help you?" : "How can I help you?"}
                 </div>
                 <div
                     className={`text-[var(--main-color)] text-base md:text-xl ${startConversation ? "text-xs" : ""} transition-all duration-300`}
                 >
-                    I am here to assist you with today&#39;s work tasks.
+
+                    {insultMode ? "I'd prefer not to..." : "I am here to assist you with today's work tasks."}
                 </div>
             </div>
 
@@ -177,28 +181,42 @@ export default function Chat() {
                     <CardFooter
                         className={`flex flex-col space-y-4 rounded-b-lg p-2 md:p-3 ${!isBoxOpen ? "hidden" : ""}`}>
                         <form onSubmit={onSubmit} className="relative w-full">
-                            <div>
-                                <Select onValueChange={(id) => {setModel(modelList.find(model => model.id == id))}}
+                            <div className="flex justify-between items-center w-full">
+                                <div className="flex items-center space-x-2">
+                                    <Switch id="bad-mode" onCheckedChange={setInsultMode}/>
+                                    <Label htmlFor="bad-mode">Insult Mode {insultMode ? "ON 😈" : "OFF 😇"}</Label>
+                                </div>
+                                <div>
+                                    <Select
+                                        onValueChange={(id) => {
+                                            setModel(modelList.find(model => model.id == id))
+                                        }}
                                         defaultValue={modelList[0].id}
-                                >
-                                    <SelectTrigger className="bg-white w-fit bg-primary border-none">
-                                        <SelectValue placeholder="select model" />
-                                    </SelectTrigger>
-                                    <SelectContent >
-                                        {modelList.map(model =>
-                                            <SelectItem key={model.id} value={model.id}>{model.label + ` (${model.value})`}</SelectItem>
-                                        )}
-                                    </SelectContent>
-                                </Select>
+                                    >
+                                        <SelectTrigger className="bg-white w-fit bg-primary border-none">
+                                            <SelectValue placeholder="select model"/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {modelList.map(model =>
+                                                <SelectItem
+                                                    key={model.id}
+                                                    value={model.id}
+                                                >
+                                                    {model.label + ` (${model.value})`}
+                                                </SelectItem>
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                              <textarea
-                                  placeholder="Ask anything..."
-                                  className="w-full border border-gray-300 p-3 pr-10 md:p-4 md:pr-12 resize-none rounded-lg min-h-[60px] md:min-h-[100px] bg-primary"
-                                  disabled={isLoading}
-                                  value={textMessage}
-                                  onChange={(e) => setTextMessage(e.target.value)}
-                                  onKeyDown={handleUserKeyPress}
-                              />
+                            <textarea
+                                placeholder="Ask anything..."
+                                className="w-full border border-gray-300 p-3 pr-10 md:p-4 md:pr-12 resize-none rounded-lg min-h-[60px] md:min-h-[100px] bg-primary"
+                                disabled={isLoading}
+                                value={textMessage}
+                                onChange={(e) => setTextMessage(e.target.value)}
+                                onKeyDown={handleUserKeyPress}
+                            />
                             <Button
                                 type="submit"
                                 disabled={isLoading}
